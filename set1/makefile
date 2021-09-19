@@ -1,17 +1,20 @@
 CC = gcc
 
-HEADERS = bytes.h base64.h bbuf.h hex.h
-OBJECTS = bytes.o base64.o bbuf.o hex.o
+HEADERS = bytes.h base64.h bbuf.h hex.h cypher.h
+OBJECTS = bytes.o base64.o bbuf.o hex.o cypher.o
+TARGETS = challenge1 challenge2 challenge3
 
 %.o: %.c $(HEADERS)
 	$(CC) -c $< -o $@
 
 challenge1: $(OBJECTS) challenge1.o
-	$(CC) $(OBJECTS) challenge1.o -o $@
+	$(CC) $(OBJECTS) $@.o -o $@
 
 challenge2: $(OBJECTS) challenge2.o
-	$(CC) $(OBJECTS) challenge2.o -o $@
+	$(CC) $(OBJECTS) $@.o -o $@
+
+challenge3: $(OBJECTS) challenge3.o
+	$(CC) $(OBJECTS) $@.o -o $@
 
 clean:
-	-rm -f $(OBJECTS)
-	-rm -f challenge1
+	-rm -f $(OBJECTS) $(TARGETS)
