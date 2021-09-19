@@ -4,5 +4,6 @@
 #include "bbuf.h"
 
 int hexToBytes(bbuf *bbuffer, char *hexStr);
+char *bytesToHex(bbuf *bbuffer);
 
 #endif

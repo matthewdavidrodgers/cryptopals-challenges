@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #include "hex.h"
@@ -38,4 +39,24 @@ int hexToBytes(bbuf *bbuffer, char *hexStr)
     }
 
     return 0;
+}
+
+char *bytesToHex(bbuf *buffer)
+{
+    char *encoded;
+    size_t i;
+    uint8_t byte;
+
+    encoded = (char *)malloc((buffer->len * 2) + 1);
+    if (!encoded) return NULL;
+
+    for (i = 0; i < buffer->len; i++)
+    {
+        byte = buffer->buf[i]; 
+        encoded[i*2] = hex_char_indexes[byte >> 4];
+        encoded[(i*2)+1] = hex_char_indexes[byte & 0x0F];
+    }
+    encoded[i*2] = '\0';
+
+    return encoded;
 }
