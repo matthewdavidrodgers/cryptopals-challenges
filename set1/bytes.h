@@ -3,7 +3,8 @@
 
 #include "bbuf.h"
 
-bbuf fixedXOR(bbuf *a, bbuf *b);
+bbuf xor(bbuf *a, bbuf *b);
+bbuf fromASCII(char *ascii);
 char *toString(bbuf *buffer);
 
 #endif

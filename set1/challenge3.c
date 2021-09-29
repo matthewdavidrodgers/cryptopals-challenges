@@ -19,12 +19,10 @@ int main()
 
     decode_details = decodeSingleByteXOR(&cyphertext_buffer);
 
-    bbuf_initTo(&key_buffer, cyphertext_buffer.len);
+    bbuf_init(&key_buffer);
+    bbuf_append(&key_buffer, decode_details.key);
 
-    for (i = 0; i < key_buffer.len; i++)
-        key_buffer.buf[i] = decode_details.key;
-
-    plaintext_buffer = fixedXOR(&cyphertext_buffer, &key_buffer);
+    plaintext_buffer = xor(&cyphertext_buffer, &key_buffer);
     bbuf_print(&plaintext_buffer);
     plaintext = toString(&plaintext_buffer);
 

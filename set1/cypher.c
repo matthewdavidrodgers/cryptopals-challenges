@@ -67,16 +67,14 @@ sb_xor_decode_details decodeSingleByteXOR(bbuf *buffer)
     double score, winning_score;
     size_t i;
 
-    bbuf_initTo(&key_buffer, buffer->len);
+    bbuf_initTo(&key_buffer, 1);
 
     winning.score = -1.0;
     current.key = 0;
     do
     {
-        for (i = 0; i < key_buffer.len; i++)
-            key_buffer.buf[i] = current.key;
-
-        decoded_buffer = fixedXOR(buffer, &key_buffer);    
+        key_buffer.buf[0] = current.key;
+        decoded_buffer = xor(buffer, &key_buffer);    
         current.score = scoreBufferDistance(&decoded_buffer);
 
         if (current.score != -1.0 && (winning.score == -1.0 || current.score < winning.score))

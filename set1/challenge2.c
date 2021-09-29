@@ -13,7 +13,7 @@ int main()
     hexToBytes(&buffer_a, hex_str_a);
     hexToBytes(&buffer_b, hex_str_b);
 
-    bbuf buffer_result = fixedXOR(&buffer_a, &buffer_b);
+    bbuf buffer_result = xor(&buffer_a, &buffer_b);
 
     encoded = bytesToHex(&buffer_result);
     printf("encoded result: %s\n", encoded);

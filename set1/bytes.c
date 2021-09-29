@@ -4,15 +4,33 @@
 
 #include "bytes.h"
 
-bbuf fixedXOR(bbuf *a, bbuf *b)
+bbuf xor(bbuf *a, bbuf *b)
 {
     bbuf result;
-    size_t i;
+    size_t a_i, b_i;
 
     bbuf_initTo(&result, a->len);
 
-    for (i = 0; i < a->len; i++)
-        result.buf[i] = a->buf[i] ^ b->buf[i];
+    b_i = 0;
+    for (a_i = 0; a_i < a->len; a_i++)
+    {
+        result.buf[a_i] = a->buf[a_i] ^ b->buf[b_i];
+        b_i = (b_i + 1) % b->len;
+    }
+
+    return result;
+}
+
+bbuf fromASCII(char *ascii)
+{
+    bbuf result;
+    size_t i, len;
+
+    len = strlen(ascii);
+    bbuf_initTo(&result, len);
+
+    for (i = 0; i < len; i++)
+        result.buf[i] = ascii[i];
 
     return result;
 }
