@@ -10,24 +10,27 @@
 
 int main()
 {
-    uint8_t key;
+    sb_xor_decode_details decode_details;
     bbuf cyphertext_buffer, plaintext_buffer, key_buffer;
-    char *cyphertext = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", *plaintext;
+    //char *cyphertext = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", *plaintext;
+    char *cyphertext = "7b5a4215415d544115415d5015455447414c155c46155f4058455c5b523f", *plaintext;
+    //char *cyphertext = "2e125b2f2c1d0f1f170e0c51331f0c06291610345c0603791f33253f0e0c", *plaintext;
     size_t i;
     
     hexToBytes(&cyphertext_buffer, cyphertext);
 
-    key = decodeSingleByteXOR(&cyphertext_buffer);
+    decode_details = decodeSingleByteXOR(&cyphertext_buffer);
 
     bbuf_initTo(&key_buffer, cyphertext_buffer.len);
 
     for (i = 0; i < key_buffer.len; i++)
-        key_buffer.buf[i] = key;
+        key_buffer.buf[i] = decode_details.key;
 
     plaintext_buffer = fixedXOR(&cyphertext_buffer, &key_buffer);
+    bbuf_print(&plaintext_buffer);
     plaintext = toString(&plaintext_buffer);
 
-    printf("decoded using key: %c (%u)\n%s\n", key, key, plaintext);
+    printf("decoded using key: %c (%u)\nwith score %f\n%s\n", decode_details.key, decode_details.key, decode_details.score, plaintext);
 
     bbuf_destroy(&plaintext_buffer);
     bbuf_destroy(&cyphertext_buffer);

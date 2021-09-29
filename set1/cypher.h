@@ -5,7 +5,12 @@
 
 #include "bbuf.h"
 
+typedef struct {
+  uint8_t key;
+  double  score;
+} sb_xor_decode_details;
+
 double scoreBufferDistance(bbuf *buffer);
-uint8_t decodeSingleByteXOR(bbuf *buffer);
+sb_xor_decode_details decodeSingleByteXOR(bbuf *buffer);
 
 #endif
