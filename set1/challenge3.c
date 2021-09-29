@@ -12,9 +12,7 @@ int main()
 {
     sb_xor_decode_details decode_details;
     bbuf cyphertext_buffer, plaintext_buffer, key_buffer;
-    //char *cyphertext = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", *plaintext;
-    char *cyphertext = "7b5a4215415d544115415d5015455447414c155c46155f4058455c5b523f", *plaintext;
-    //char *cyphertext = "2e125b2f2c1d0f1f170e0c51331f0c06291610345c0603791f33253f0e0c", *plaintext;
+    char *cyphertext = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", *plaintext;
     size_t i;
     
     hexToBytes(&cyphertext_buffer, cyphertext);

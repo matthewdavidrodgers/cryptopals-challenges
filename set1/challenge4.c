@@ -27,9 +27,6 @@ int main()
         hexToBytes(&buffer, line);
 
         decode_details = decodeSingleByteXOR(&buffer);
-        // start
-        printf("%s %c (%u) %f\n", line, decode_details.key, decode_details.key, decode_details.score);
-        // end
 
         if (decode_details.score != -1 && (winning_line == NULL || decode_details.score < winning_decode_details.score))
         {
