@@ -35,6 +35,30 @@ bbuf fromASCII(char *ascii)
     return result;
 }
 
+size_t distance(bbuf *a, bbuf *b)
+{
+    size_t i, dis, len;
+    uint8_t xored_byte;
+
+    if (a->len > b->len)
+    {
+        len = a->len;
+        dis = (a->len - b->len) * 8;
+    }
+    else
+    {
+        len = b->len;
+        dis = (b->len - a->len) * 8;
+    }
+
+    dis = 0;
+    for (i = 0; i < len; i++)
+        for (xored_byte = a->buf[i] ^ b->buf[i]; xored_byte != 0; xored_byte >>= 1)
+            dis += xored_byte & 0x1;
+
+    return dis;
+}
+
 char *toString(bbuf *buffer)
 {
     char *str = (char *)malloc(buffer->len + 1);

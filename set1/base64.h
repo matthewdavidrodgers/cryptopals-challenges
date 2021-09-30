@@ -4,5 +4,6 @@
 #include "bbuf.h"
 
 char *bytesToBase64(bbuf *buffer);
+bbuf base64ToBytes(char *base64);
 
 #endif

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "base64.h"
 
@@ -71,4 +72,52 @@ char *bytesToBase64(bbuf *bbuffer)
     }
 
     return encoded;
+}
+
+uint8_t base64CharValue(char c)
+{
+    uint8_t v = 0;
+    while (v < 64 && base64_char_indexes[v] != c)
+        v++;
+    return v;
+}
+
+bbuf base64ToBytes(char *base64)
+{
+    bbuf result;
+    size_t base64_size, decoded_size, i, char_offset;
+    uint8_t byte;
+    char a, b;
+
+    base64_size = strlen(base64);
+    decoded_size = (base64_size / 4) * 3;
+    if (base64_size > 0 && base64[base64_size - 1] == '=') decoded_size--;
+    if (base64_size > 1 && base64[base64_size - 2] == '=') decoded_size--;
+
+    bbuf_initTo(&result, decoded_size);
+    
+    for (i = 0; i < decoded_size; i++)
+    {
+        char_offset = (i / 3) * 4;
+        if (i % 3 == 0)
+        {
+            a = base64[char_offset];
+            b = base64[char_offset + 1];
+            result.buf[i] = (base64CharValue(a) << 2) | (base64CharValue(b) >> 4);
+        }
+        else if (i % 3 == 1)
+        {
+            a = base64[char_offset + 1];
+            b = base64[char_offset + 2];
+            result.buf[i] = ((base64CharValue(a) & 0xF) << 4) | (base64CharValue(b) >> 2);
+        }
+        else
+        {
+            a = base64[char_offset + 2];
+            b = base64[char_offset + 3];
+            result.buf[i] = ((base64CharValue(a) & 0x3) << 6) | base64CharValue(b);
+        }
+    }
+
+    return result;
 }
