@@ -1,7 +1,8 @@
 CC = gcc
 
-HEADERS = bytes.h base64.h bbuf.h hex.h cypher.h
-OBJECTS = bytes.o base64.o bbuf.o hex.o cypher.o
+FILENAMES = bytes base64 bbuf hex cypher
+HEADERS = $(addsuffix .h,$(FILENAMES))
+OBJECTS = $(addsuffix .o,$(FILENAMES))
 TARGETS = challenge1 challenge2 challenge3 challenge4 challenge5 challenge6
 
 %.o: %.c $(HEADERS)
@@ -26,4 +27,4 @@ challenge6: $(OBJECTS) challenge6.o
 	$(CC) -g $(OBJECTS) $@.o -o $@
 
 clean:
-	-rm -f $(OBJECTS) $(TARGETS)
+	-rm -f $(OBJECTS) $(TARGETS) $(addsuffix .o,$(TARGETS))

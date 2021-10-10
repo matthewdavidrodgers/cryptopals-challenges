@@ -34,6 +34,15 @@ void bbuf_append(bbuf *bbuffer, uint8_t b)
     bbuffer->buf[bbuffer->len++] = b;
 }
 
+void bbuf_slice(bbuf *dst, bbuf *src, size_t start, size_t end)
+{
+    size_t i;
+
+    bbuf_initTo(dst, end-start);
+    for (i = 0; i < end-start; i++)
+        dst->buf[i] = src->buf[i+start];
+}
+
 void bbuf_destroy(bbuf *bbuffer)
 {
     free(bbuffer->buf);
