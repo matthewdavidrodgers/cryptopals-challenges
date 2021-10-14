@@ -38,7 +38,7 @@ void pick_rk_xor_keysizes(bbuf *cyphertext, keysize_t *keysizes, size_t count)
     bbuf blocks[RK_BLOCKS];
 
     num_keysizes = 0;
-    for (keysize = 2; keysize < 40; keysize++)
+    for (keysize = 2; keysize <= 40; keysize++)
     {
         for (i = 0; i < RK_BLOCKS; i++)
             bbuf_slice(&blocks[i], cyphertext, i * keysize, (i * keysize) + keysize);
@@ -74,7 +74,7 @@ bbuf *break_and_transpose_buff(bbuf *buffer, size_t blocksize)
     {
         bbuf_init(&buffers[x]);
         y = 0;
-        while (y + x < buffer->len)
+        while ((y + x) < buffer->len)
         {
             bbuf_append(&buffers[x], buffer->buf[y + x]);
             y += blocksize;
@@ -96,6 +96,7 @@ size_t max_char_frequency(bbuf *buffer)
     for (i = 0; i < buffer->len; i++)
     {
         byte = buffer->buf[i];
+        buffer_char_counts[byte]++;
         is_countable_char = false;
         if (byte >= 65 && byte <= 90)
         {
@@ -123,19 +124,22 @@ size_t max_char_frequency(bbuf *buffer)
 
 uint8_t pick_uniform_xor_byte(bbuf *buffer)
 {
-    size_t buffer_char_counts[52], score;
+    size_t score;
     ssize_t best_score;
     uint8_t key, best_key;
     bbuf key_buff, result_buff;
 
     bbuf_initTo(&key_buff, 1);
 
+    key = 0;
     best_score = -1;
     do
     {
         key_buff.buf[0] = key;
         result_buff = xor(buffer, &key_buff);
+        bbuf_print(&result_buff);
         score = max_char_frequency(&result_buff);
+        bbuf_print(&result_buff);
         if (best_score == -1 || best_score < score)
         {
             best_score = score;
