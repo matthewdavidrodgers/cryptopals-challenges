@@ -3,7 +3,9 @@
 
 #include "bbuf.h"
 
-char *bytesToBase64(bbuf *buffer);
-bbuf base64ToBytes(char *base64);
+bbuf encode_base64(bbuf *buffer);
+char *encode_base64_str(bbuf *buffer);
+bbuf decode_base64(bbuf *encoded);
+bbuf decode_base64_str(char *encoded_str);
 
 #endif

@@ -8,7 +8,7 @@
 
 char hex_char_indexes[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-int hexToBytes(bbuf *bbuffer, char *hexStr)
+int hex_to_bytes(bbuf *bbuffer, char *hexStr)
 {
     bool charIsFound, isUpperNibble;
     int hexStrLen, byteAlignOffset, byteIndex, i, charIndex;
@@ -16,7 +16,7 @@ int hexToBytes(bbuf *bbuffer, char *hexStr)
     hexStrLen = (int)strlen(hexStr);
     byteAlignOffset = hexStrLen % 2;
 
-    bbuf_initTo(bbuffer, (hexStrLen/2)+byteAlignOffset);
+    bbuf_init_to(bbuffer, (hexStrLen/2)+byteAlignOffset);
 
     for (i = 0; i < hexStrLen; i++)
     {
@@ -41,7 +41,7 @@ int hexToBytes(bbuf *bbuffer, char *hexStr)
     return 0;
 }
 
-char *bytesToHex(bbuf *buffer)
+char *bytes_to_hex(bbuf *buffer)
 {
     char *encoded;
     size_t i;

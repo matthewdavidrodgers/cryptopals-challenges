@@ -10,12 +10,12 @@ int main()
     bbuf buffer_a, buffer_b;
     char *encoded, *hex_str_a = "1c0111001f010100061a024b53535009181c", *hex_str_b = "686974207468652062756c6c277320657965";
 
-    hexToBytes(&buffer_a, hex_str_a);
-    hexToBytes(&buffer_b, hex_str_b);
+    hex_to_bytes(&buffer_a, hex_str_a);
+    hex_to_bytes(&buffer_b, hex_str_b);
 
     bbuf buffer_result = xor(&buffer_a, &buffer_b);
 
-    encoded = bytesToHex(&buffer_result);
+    encoded = bytes_to_hex(&buffer_result);
     printf("encoded result: %s\n", encoded);
 
     bbuf_destroy(&buffer_a);

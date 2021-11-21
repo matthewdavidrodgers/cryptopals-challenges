@@ -13,11 +13,11 @@ int main()
     char *key = "ICE";
     char *cyphertext;
 
-    plaintext_buffer = fromASCII(plaintext);
-    key_buffer = fromASCII(key);
+    plaintext_buffer = from_ascii(plaintext);
+    key_buffer = from_ascii(key);
 
     cyphertext_buffer = xor(&plaintext_buffer, &key_buffer);
-    cyphertext = bytesToHex(&cyphertext_buffer);
+    cyphertext = bytes_to_hex(&cyphertext_buffer);
 
     printf("result: \n%s\n", cyphertext);
 

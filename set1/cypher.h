@@ -5,20 +5,28 @@
 
 #include "bbuf.h"
 
-typedef struct {
+typedef struct sb_xor_decode_details {
   uint8_t key;
   double  score;
 } sb_xor_decode_details;
+
+typedef struct xor_decode_details {
+  bbuf   key_buffer;
+  bbuf   plaintext_buffer;
+  double score;
+} xor_decode_details;
 
 typedef struct keysize_t {
   size_t keysize;
   double score;
 } keysize_t;
 
-double scoreBufferDistance(bbuf *buffer);
-void pick_rk_xor_keysizes(bbuf *cyphertext, keysize_t *keysizes, size_t count);
+double score_buffer_as_english(bbuf *buffer);
+size_t pick_rk_xor_keysizes(bbuf *cyphertext, keysize_t *keysizes, size_t count);
 bbuf *break_and_transpose_buff(bbuf *buffer, size_t blocksize);
-uint8_t pick_uniform_xor_byte(bbuf *buffer);
-sb_xor_decode_details decodeSingleByteXOR(bbuf *buffer);
+sb_xor_decode_details decode_sb_xor(bbuf *buffer);
+void decode_sb_xor_ranked(bbuf *buffer, sb_xor_decode_details *top, uint8_t top_taken);
+xor_decode_details decode_rk_xor_for_size(bbuf *buffer, size_t keysize);
+xor_decode_details decode_rk_xor(bbuf *buffer);
 
 #endif

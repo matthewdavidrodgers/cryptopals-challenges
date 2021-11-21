@@ -3,7 +3,7 @@
 
 #include "bbuf.h"
 
-int hexToBytes(bbuf *bbuffer, char *hexStr);
-char *bytesToHex(bbuf *bbuffer);
+int hex_to_bytes(bbuf *bbuffer, char *hexStr);
+char *bytes_to_hex(bbuf *bbuffer);
 
 #endif

@@ -1,7 +1,7 @@
-CC = gcc
+CC = clang
 
 FILENAMES = bytes base64 bbuf hex cypher
-HEADERS = $(addsuffix .h,$(FILENAMES))
+HEADERS = $(addsuffix .h,$(FILENAMES)) common.h
 OBJECTS = $(addsuffix .o,$(FILENAMES))
 TARGETS = challenge1 challenge2 challenge3 challenge4 challenge5 challenge6
 

@@ -4,30 +4,35 @@
 
 #include "bytes.h"
 
-bbuf xor(bbuf *a, bbuf *b)
+void xor_in_place(bbuf *result, bbuf *a, bbuf *b)
 {
-    bbuf result;
     size_t a_i, b_i;
-
-    bbuf_initTo(&result, a->len);
 
     b_i = 0;
     for (a_i = 0; a_i < a->len; a_i++)
     {
-        result.buf[a_i] = a->buf[a_i] ^ b->buf[b_i];
+        result->buf[a_i] = a->buf[a_i] ^ b->buf[b_i];
         b_i = (b_i + 1) % b->len;
     }
+}
+
+bbuf xor(bbuf *a, bbuf *b)
+{
+    bbuf result = bbuf_new();
+    bbuf_init_to(&result, a->len);
+
+    xor_in_place(&result, a, b);
 
     return result;
 }
 
-bbuf fromASCII(char *ascii)
+bbuf from_ascii(char *ascii)
 {
     bbuf result;
     size_t i, len;
 
     len = strlen(ascii);
-    bbuf_initTo(&result, len);
+    bbuf_init_to(&result, len);
 
     for (i = 0; i < len; i++)
         result.buf[i] = ascii[i];
@@ -40,16 +45,7 @@ size_t distance(bbuf *a, bbuf *b)
     size_t i, dis, len;
     uint8_t xored_byte;
 
-    if (a->len > b->len)
-    {
-        len = a->len;
-        dis = (a->len - b->len) * 8;
-    }
-    else
-    {
-        len = b->len;
-        dis = (b->len - a->len) * 8;
-    }
+    len = a->len > b->len ? b->len : a->len;
 
     dis = 0;
     for (i = 0; i < len; i++)
@@ -59,7 +55,7 @@ size_t distance(bbuf *a, bbuf *b)
     return dis;
 }
 
-char *toString(bbuf *buffer)
+char *to_string(bbuf *buffer)
 {
     char *str = (char *)malloc(buffer->len + 1);
     memcpy(str, buffer->buf, buffer->len);

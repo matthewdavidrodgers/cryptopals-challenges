@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "common.h"
 #include "cypher.h"
 #include "bbuf.h"
 #include "bytes.h"
@@ -13,7 +14,7 @@ int main()
 {
     FILE *data_file;
     char *line = NULL, *winning_line = NULL, *plaintext;
-    ssize_t line_len = 0;
+    size_t line_len = 0;
     size_t nread, i;
     bbuf buffer, cyphertext_buffer, key_buffer, plaintext_buffer;
     sb_xor_decode_details decode_details, winning_decode_details;
@@ -24,9 +25,9 @@ int main()
     while ((nread = getline(&line, &line_len, data_file)) != -1)
     {
         line[nread-1] = '\0';
-        hexToBytes(&buffer, line);
+        hex_to_bytes(&buffer, line);
 
-        decode_details = decodeSingleByteXOR(&buffer);
+        decode_details = decode_sb_xor(&buffer);
 
         if (decode_details.score != -1 && (winning_line == NULL || decode_details.score < winning_decode_details.score))
         {
@@ -38,18 +39,22 @@ int main()
         }
     }
 
-    hexToBytes(&cyphertext_buffer, winning_line);
+    hex_to_bytes(&cyphertext_buffer, winning_line);
 
     bbuf_init(&key_buffer);
     bbuf_append(&key_buffer, winning_decode_details.key);
 
     plaintext_buffer = xor(&cyphertext_buffer, &key_buffer);
-    plaintext = toString(&plaintext_buffer);
+    plaintext = to_string(&plaintext_buffer);
 
     printf("decoded using key %c (%u)\n", winning_decode_details.key, winning_decode_details.key);
     printf("score %f\n", winning_decode_details.score);
     printf("from %s\n", winning_line);
     printf("to   %s\n", plaintext);
+
+#ifdef DEBUG_VERBOSE
+    bbuf_print(&plaintext_buffer, BBUF_GRID_ASCII);
+#endif
 
     fclose(data_file);
     bbuf_destroy(&buffer);
