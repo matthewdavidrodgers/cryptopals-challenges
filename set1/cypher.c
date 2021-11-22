@@ -37,7 +37,7 @@ double avg_char_frequencies[] = {
 
 ssize_t insert_at_sorted_details_col(sb_xor_decode_details *collection, size_t len, size_t cap, sb_xor_decode_details item)
 {
-    ssize_t insert_index = 0;
+    size_t insert_index = 0;
 
     while (insert_index < len && collection[insert_index].score < item.score)
         insert_index++;
@@ -48,16 +48,15 @@ ssize_t insert_at_sorted_details_col(sb_xor_decode_details *collection, size_t l
            memmove(collection + insert_index + 1, collection + insert_index,
                    sizeof(sb_xor_decode_details) * (len - insert_index - 1));
        collection[insert_index] = item;
+       return (ssize_t)insert_index;
     }
     else
-        insert_index = -1;
-
-    return insert_index;
+        return -1;
 }
 
 ssize_t insert_at_sorted_keysize_col(keysize_t *collection, size_t len, size_t cap, keysize_t item)
 {
-    ssize_t insert_index = 0;
+    size_t insert_index = 0;
 
     while (insert_index < len && collection[insert_index].score < item.score)
         insert_index++;
@@ -68,16 +67,16 @@ ssize_t insert_at_sorted_keysize_col(keysize_t *collection, size_t len, size_t c
             memmove(collection + insert_index + 1, collection + insert_index,
                     sizeof(keysize_t) * (len - insert_index - 1));
         collection[insert_index] = item;
+        return (ssize_t)insert_index;
     }
     else
-        insert_index = -1;
-
-    return insert_index;
+        return -1;
 }
 
 size_t pick_rk_xor_keysizes(bbuf *cyphertext, keysize_t *keysizes, size_t count)
 {
-    size_t max_keysize, num_blocks, keysize, num_keysizes, inserted_at, i, j, x, y;
+    size_t max_keysize, num_blocks, keysize, num_keysizes, i, x, y;
+    ssize_t inserted_at;
     keysize_t curr_keysize = {};
     double block_dis;
     bbuf *blocks;
@@ -106,7 +105,7 @@ size_t pick_rk_xor_keysizes(bbuf *cyphertext, keysize_t *keysizes, size_t count)
         curr_keysize.score = block_dis;
 
         inserted_at = insert_at_sorted_keysize_col(keysizes, num_keysizes, count, curr_keysize);
-        if (inserted_at != -1 && inserted_at == num_keysizes) num_keysizes++;
+        if (inserted_at != -1 && (size_t)inserted_at == num_keysizes) num_keysizes++;
 
         for (i = 0; i < num_blocks; i++)
             bbuf_destroy(&blocks[i]);
@@ -187,7 +186,7 @@ double score_buffer_as_english(bbuf *buffer)
         score += (char_score < 0) ? (-1*char_score) : char_score;
     }
 
-    if (buffer->len != countable_chars)
+    if ((int)buffer->len != countable_chars)
         score *= (buffer->len - countable_chars);
 
     return score;
@@ -196,8 +195,11 @@ double score_buffer_as_english(bbuf *buffer)
 xor_decode_details decode_rk_xor_for_size(bbuf *buffer, size_t keysize)
 {
     bbuf *transposed_blocks;
-    size_t i, j, at_pos, examining_pos, *positions;
-    xor_decode_details result, curr_result;
+    size_t i, j, *positions;
+#ifdef ITERATE_TOP_KEYS
+    size_t at_pos;
+#endif
+    xor_decode_details result;
     sb_xor_decode_details **byte_decode_entries;
 
     // init positions for iterating key enumerations
@@ -350,9 +352,7 @@ void decode_sb_xor_ranked(bbuf *buffer, sb_xor_decode_details *top, uint8_t top_
 {
     sb_xor_decode_details current;
     bbuf key_buffer = bbuf_new(), decoded_buffer = bbuf_new();
-    uint8_t key, curr_top_taken;
-    double score;
-    size_t i;
+    uint8_t curr_top_taken;
     ssize_t inserted_at;
 
     curr_top_taken = 0;
@@ -385,8 +385,6 @@ sb_xor_decode_details decode_sb_xor(bbuf *buffer)
 {
     sb_xor_decode_details winning, current;
     bbuf key_buffer, decoded_buffer;
-    uint8_t key, winning_key;
-    double score, winning_score;
     size_t i;
     ssize_t inserted_at;
 
@@ -411,8 +409,8 @@ sb_xor_decode_details decode_sb_xor(bbuf *buffer)
         if (current.score >= 0)
         {
             inserted_at = insert_at_sorted_details_col(top_results, num_results, COMPARE_SCORES, current);
-           if (inserted_at != -1 && inserted_at == num_results)
-            num_results++;
+            if (inserted_at != -1 && (size_t)inserted_at == num_results)
+                num_results++;
         }
 
         if (current.score > 0.0 && (winning.score == -1.0 || current.score < winning.score))

@@ -1,7 +1,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
+#include "common.h"
 #include "bytes.h"
 
 void xor_in_place(bbuf *result, bbuf *a, bbuf *b)
@@ -38,6 +40,34 @@ bbuf from_ascii(char *ascii)
         result.buf[i] = ascii[i];
 
     return result;
+}
+
+bbuf from_file(char *filename)
+{
+    FILE *data_file;
+    bbuf buffer = bbuf_new();
+    char *line = NULL;
+    size_t line_len, i;
+    ssize_t nread;
+
+    data_file = fopen(filename, "r");
+    if (!data_file) exit(1);
+
+    bbuf_init(&buffer);
+
+    while ((nread = getline(&line, &line_len, data_file)) != -1)
+    {
+        for (i = 0; i < (size_t)(nread - 1); i++)
+            bbuf_append(&buffer, line[i]);
+#ifndef OMIT_FILE_NEWLINE
+        bbuf_append(&buffer, '\n');
+#endif
+    }
+
+    fclose(data_file);
+    free(line);
+
+    return buffer;
 }
 
 size_t distance(bbuf *a, bbuf *b)

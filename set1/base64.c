@@ -96,7 +96,6 @@ bbuf decode_base64(bbuf *encoded)
 {
     bbuf decoded = bbuf_new();
     size_t decoded_size, i, char_offset;
-    uint8_t byte;
     char a, b;
 
     decoded_size = (encoded->len / 4) * 3;
