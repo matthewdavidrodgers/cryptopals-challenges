@@ -15,7 +15,7 @@ bbuf base64_file_cyphertext(char *filename)
     FILE *data_file;
     bbuf encoded_cyphertext_b = bbuf_new(), cyphertext_b = bbuf_new();
     char *line = NULL;
-    size_t line_len, size, i;
+    size_t line_len, i;
     ssize_t nread;
 
     data_file = fopen(filename, "r");
@@ -25,7 +25,7 @@ bbuf base64_file_cyphertext(char *filename)
 
     while ((nread = getline(&line, &line_len, data_file)) != -1)
     {
-        for (i = 0; i < nread - 1; i++)
+        for (i = 0; i < (size_t)nread - 1; i++)
             bbuf_append(&encoded_cyphertext_b, line[i]);
 #ifndef OMIT_FILE_NEWLINE
         bbuf_append(&encoded_cyphertext_b, '\n');
@@ -62,7 +62,7 @@ bbuf simple_cyphertext(char *plaintext, char *keytext)
 
 int main()
 {
-    bbuf cyphertext_b = bbuf_new(), plaintext_b = bbuf_new(), keytext_b = bbuf_new();
+    bbuf cyphertext_b = bbuf_new();
     xor_decode_details result;
     char *plaintext, *keytext;
 
