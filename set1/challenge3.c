@@ -13,9 +13,8 @@ int main()
     sb_xor_decode_details decode_details;
     bbuf cyphertext_buffer, plaintext_buffer, key_buffer;
     char *cyphertext = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736", *plaintext;
-    size_t i;
     
-    hex_to_bytes(&cyphertext_buffer, cyphertext);
+    cyphertext_buffer = hex_to_bytes(cyphertext);
 
     decode_details = decode_sb_xor(&cyphertext_buffer);
 

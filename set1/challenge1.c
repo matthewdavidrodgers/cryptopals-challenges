@@ -15,7 +15,7 @@ int main()
 
     bbuf buffer;
 
-    hex_to_bytes(&buffer, hex_str);
+    buffer = hex_to_bytes(hex_str);
     base64_str = encode_base64_str(&buffer);
 
     bbuf_print(&buffer, BBUF_DECIMAL);

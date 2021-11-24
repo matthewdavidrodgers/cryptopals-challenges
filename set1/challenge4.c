@@ -15,7 +15,7 @@ int main()
     FILE *data_file;
     char *line = NULL, *winning_line = NULL, *plaintext;
     size_t line_len = 0;
-    size_t nread, i;
+    ssize_t nread;
     bbuf buffer, cyphertext_buffer, key_buffer, plaintext_buffer;
     sb_xor_decode_details decode_details, winning_decode_details;
 
@@ -25,7 +25,7 @@ int main()
     while ((nread = getline(&line, &line_len, data_file)) != -1)
     {
         line[nread-1] = '\0';
-        hex_to_bytes(&buffer, line);
+        buffer = hex_to_bytes(line);
 
         decode_details = decode_sb_xor(&buffer);
 
@@ -37,9 +37,10 @@ int main()
             strcpy(winning_line, line);
             winning_decode_details = decode_details;
         }
+        bbuf_destroy(&buffer);
     }
 
-    hex_to_bytes(&cyphertext_buffer, winning_line);
+    cyphertext_buffer = hex_to_bytes(winning_line);
 
     bbuf_init(&key_buffer);
     bbuf_append(&key_buffer, winning_decode_details.key);
@@ -57,7 +58,6 @@ int main()
 #endif
 
     fclose(data_file);
-    bbuf_destroy(&buffer);
     bbuf_destroy(&cyphertext_buffer);
     bbuf_destroy(&key_buffer);
     bbuf_destroy(&plaintext_buffer);

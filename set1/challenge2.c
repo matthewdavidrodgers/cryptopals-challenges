@@ -10,8 +10,8 @@ int main()
     bbuf buffer_a, buffer_b;
     char *encoded, *hex_str_a = "1c0111001f010100061a024b53535009181c", *hex_str_b = "686974207468652062756c6c277320657965";
 
-    hex_to_bytes(&buffer_a, hex_str_a);
-    hex_to_bytes(&buffer_b, hex_str_b);
+    buffer_a = hex_to_bytes(hex_str_a);
+    buffer_b = hex_to_bytes(hex_str_b);
 
     bbuf buffer_result = xor(&buffer_a, &buffer_b);
 
