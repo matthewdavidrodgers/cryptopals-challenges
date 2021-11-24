@@ -6,34 +6,23 @@ LINK_OPENSSL = -L/usr/local/Cellar/openssl@3/3.0.0_1/lib -I/usr/local/Cellar/ope
 FILENAMES = bytes base64 bbuf hex cypher
 HEADERS = $(addsuffix .h,$(FILENAMES)) common.h
 OBJECTS = $(addsuffix .o,$(FILENAMES))
-TARGETS = challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7
+TARGETS = challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8
 
+# this rule overrides the "%.o" rule below it when it matches
 challenge7.o: challenge7.c
 	$(CC) $(CFLAGS) $(INCLUDE_OPENSSL) -c $< -o $@
 
+# transforms .c files to .o
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-challenge1: $(OBJECTS) challenge1.o
-	$(CC) $(CFLAGS) $(OBJECTS) $@.o -o $@
-
-challenge2: $(OBJECTS) challenge2.o
-	$(CC) $(CFLAGS) $(OBJECTS) $@.o -o $@
-
-challenge3: $(OBJECTS) challenge3.o
-	$(CC) $(CFLAGS) $(OBJECTS) $@.o -o $@
-
-challenge4: $(OBJECTS) challenge4.o
-	$(CC) $(CFLAGS) $(OBJECTS) $@.o -o $@
-
-challenge5: $(OBJECTS) challenge5.o
-	$(CC) $(CFLAGS) $(OBJECTS) $@.o -o $@
-
-challenge6: $(OBJECTS) challenge6.o
-	$(CC) $(CFLAGS)  $(OBJECTS) $@.o -o $@
-
+# this rule overrides the "challenge%" rule below it when it matches
 challenge7: $(OBJECTS) challenge7.o
 	$(CC) $(CFLAGS) $(INCLUDE_OPENSSL) $(LINK_OPENSSL) $(OBJECTS) $@.o -o $@
+
+# executable targets 
+challenge%: $(OBJECTS) challenge%.o
+	$(CC) $(CFLAGS) $(OBJECTS) $@.o -o $@
 
 clean:
 	-rm -f $(OBJECTS) $(TARGETS) $(addsuffix .o,$(TARGETS))
