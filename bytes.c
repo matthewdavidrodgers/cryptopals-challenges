@@ -85,6 +85,18 @@ size_t distance(bbuf *a, bbuf *b)
     return dis;
 }
 
+void pad_for_blocksize(bbuf *buffer, size_t blocksize)
+{
+    size_t i, pad_by;
+
+    if (buffer->len % blocksize)
+    {
+        pad_by = blocksize - (buffer->len % blocksize);
+        for (i = 0; i < pad_by; i++)
+            bbuf_append(buffer, (uint8_t)pad_by);
+    }
+}
+
 char *to_string(bbuf *buffer)
 {
     char *str = (char *)malloc(buffer->len + 1);

@@ -21,5 +21,4 @@ void bbuf_destroy(bbuf *bbuffer);
 void bbuf_print(bbuf *buffer, bbuf_print_format format);
 
 
-
 #endif

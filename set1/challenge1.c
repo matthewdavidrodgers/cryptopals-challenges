@@ -3,9 +3,9 @@
 #include <assert.h>
 #include <string.h>
 
-#include "bbuf.h"
-#include "base64.h"
-#include "hex.h"
+#include "../bbuf.h"
+#include "../base64.h"
+#include "../hex.h"
 
 int main()
 {

@@ -3,8 +3,8 @@ CFLAGS = -g -Wall -Wextra
 INCLUDE_OPENSSL = -I/usr/local/Cellar/openssl@3/3.0.0_1/include
 LINK_OPENSSL = -L/usr/local/Cellar/openssl@3/3.0.0_1/lib -I/usr/local/Cellar/openssl@3/3.0.0_1/include -lssl -lcrypto
 
-FILENAMES = ../bytes ../base64 ../bbuf ../hex ../cypher
-HEADERS = $(addsuffix .h,$(FILENAMES)) ../common.h
+FILENAMES = bytes base64 bbuf hex cypher
+HEADERS = $(addsuffix .h,$(FILENAMES)) common.h
 OBJECTS = $(addsuffix .o,$(FILENAMES))
 TARGETS = challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8
 
