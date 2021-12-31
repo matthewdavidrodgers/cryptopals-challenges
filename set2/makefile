@@ -6,7 +6,7 @@ CFLAGS = -g -Wall -Wextra
 FILENAMES = ../bytes ../base64 ../bbuf ../hex ../cypher
 HEADERS = $(addsuffix .h,$(FILENAMES)) ../common.h
 OBJECTS = $(addsuffix .o,$(FILENAMES))
-TARGETS = challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8
+TARGETS = challenge9
 
 # this rule overrides the "%.o" rule below it when it matches
 # challenge7.o: challenge7.c
