@@ -3,10 +3,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "bbuf.h"
-#include "hex.h"
-#include "bytes.h"
-#include "cypher.h"
+#include "../bbuf.h"
+#include "../hex.h"
+#include "../bytes.h"
+#include "../cypher.h"
 
 int main()
 {

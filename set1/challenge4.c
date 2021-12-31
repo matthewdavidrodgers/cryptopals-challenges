@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "common.h"
-#include "cypher.h"
-#include "bbuf.h"
-#include "bytes.h"
-#include "hex.h"
+#include "../common.h"
+#include "../cypher.h"
+#include "../bbuf.h"
+#include "../bytes.h"
+#include "../hex.h"
 
 #define DATA_FILE_NAME "challenge4.txt"
 

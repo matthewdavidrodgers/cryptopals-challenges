@@ -3,9 +3,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "common.h"
-#include "bbuf.h"
-#include "hex.h"
+#include "../common.h"
+#include "../bbuf.h"
+#include "../hex.h"
 
 #define DATA_FILENAME "challenge8.txt"
 #define BLOCKSIZE 16

@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "bbuf.h"
-#include "bytes.h"
-#include "hex.h"
+#include "../bbuf.h"
+#include "../bytes.h"
+#include "../hex.h"
 
 int main()
 {

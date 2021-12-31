@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bbuf.h"
-#include "bytes.h"
-#include "hex.h"
+#include "../bbuf.h"
+#include "../bytes.h"
+#include "../hex.h"
 
 int main()
 {
