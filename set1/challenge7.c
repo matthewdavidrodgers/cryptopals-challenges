@@ -4,9 +4,9 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#include "bbuf.h"
-#include "bytes.h"
-#include "base64.h"
+#include "../bbuf.h"
+#include "../bytes.h"
+#include "../base64.h"
 
 #define DATA_FILENAME "challenge7.txt"
 #define KEY "YELLOW SUBMARINE"
@@ -19,7 +19,7 @@ int main()
 {
     bbuf encoded_cyphertext_b = bbuf_new(), cyphertext_b = bbuf_new(), plaintext_buf = bbuf_new();
     char *plaintext;
-    int written;
+    int written, total_written;
     EVP_CIPHER_CTX *ctx;
 
     SSL_load_error_strings();
@@ -35,14 +35,22 @@ int main()
     ctx = EVP_CIPHER_CTX_new();
     EVP_DecryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, (const unsigned char *)KEY, NULL);
 
-    // plus one to account for the null terminator? as if this was a string?
-    if (!EVP_CipherUpdate(ctx, plaintext_buf.buf, &written, cyphertext_b.buf, cyphertext_b.len + 1))
+    total_written = written = 0;
+
+    if (!EVP_CipherUpdate(ctx, plaintext_buf.buf, &written, cyphertext_b.buf, cyphertext_b.len))
     {
         printf("OpenSSL Cipher update error\n");
         exit(1);
     }
+    total_written += written;
+    if (!EVP_CipherFinal(ctx, plaintext_buf.buf + total_written, &written))
+    {
+        printf("OpenSSL Cipher finalize error\n");
+        exit(1);
+    }
+    total_written += written;
 
-    assert(written == (int)plaintext_buf.len);
+    assert(((int)plaintext_buf.len - 16) < total_written && total_written <= (int)plaintext_buf.len);
 
     plaintext_buf.len = cyphertext_b.len;
 
