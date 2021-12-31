@@ -9,7 +9,10 @@ OBJECTS = $(addsuffix .o,$(FILENAMES))
 TARGETS = challenge1 challenge2 challenge3 challenge4 challenge5 challenge6 challenge7 challenge8
 
 # this rule overrides the "%.o" rule below it when it matches
-challenge7.o: challenge7.c
+# challenge7.o: challenge7.c
+#	$(CC) $(CFLAGS) $(INCLUDE_OPENSSL) -c $< -o $@
+
+../cypher.o: ../cypher.c
 	$(CC) $(CFLAGS) $(INCLUDE_OPENSSL) -c $< -o $@
 
 # transforms .c files to .o

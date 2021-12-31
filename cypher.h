@@ -28,5 +28,6 @@ sb_xor_decode_details decode_sb_xor(bbuf *buffer);
 void decode_sb_xor_ranked(bbuf *buffer, sb_xor_decode_details *top, uint8_t top_taken);
 xor_decode_details decode_rk_xor_for_size(bbuf *buffer, size_t keysize);
 xor_decode_details decode_rk_xor(bbuf *buffer);
+bbuf decode_aes_ecb(bbuf *cyphertext, bbuf *key);
 
 #endif

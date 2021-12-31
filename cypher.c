@@ -3,6 +3,11 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
+
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #include "common.h"
 #include "cypher.h"
@@ -443,4 +448,42 @@ sb_xor_decode_details decode_sb_xor(bbuf *buffer)
 #endif
 
     return winning;
+}
+
+bbuf decode_aes_ecb(bbuf *cyphertext, bbuf *key)
+{
+    int written, total_written;
+    EVP_CIPHER_CTX *ctx;
+    bbuf plaintext = bbuf_new();
+
+    SSL_load_error_strings();
+    ERR_load_BIO_strings();
+    OpenSSL_add_all_algorithms();
+
+    bbuf_init_to(&plaintext, cyphertext->len);
+
+    ctx = EVP_CIPHER_CTX_new();
+    EVP_DecryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key->buf, NULL);
+
+    total_written = written = 0;
+
+    if (!EVP_CipherUpdate(ctx, plaintext.buf, &written, cyphertext->buf, cyphertext->len))
+    {
+        printf("OpenSSL Cipher update error\n");
+        exit(1);
+    }
+    total_written += written;
+    if (!EVP_CipherFinal(ctx, plaintext.buf + total_written, &written))
+    {
+        printf("OpenSSL Cipher finalize error\n");
+        exit(1);
+    }
+    total_written += written;
+
+    assert(((int)plaintext.len - 16) < total_written && total_written <= (int)plaintext.len);
+    plaintext.len = total_written; // should i realloc off the extra bytes?
+
+    EVP_CIPHER_CTX_free(ctx);
+
+    return plaintext;
 }
