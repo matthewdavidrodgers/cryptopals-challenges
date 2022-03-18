@@ -487,3 +487,60 @@ bbuf decode_aes_ecb(bbuf *cyphertext, bbuf *key)
 
     return plaintext;
 }
+
+bbuf aes_cbc_block(EVP_CIPHER_CTX *ctx, bbuf *block, bbuf *prev_block, bbuf *key, bool encrypt)
+{
+    bbuf output = bbuf_new();
+    int actually_written;
+
+    bbuf_init_to(&output, block->len);
+
+    EVP_CIPHER_CTX_reset(ctx);
+    EVP_CipherInit(ctx, EVP_aes_128_ecb(), key->buf, NULL, encrypt);
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
+
+    actually_written = 0;
+    if (!EVP_CipherUpdate(ctx, output.buf, &actually_written, block->buf, 16))
+    {
+        printf("OpenSSL Cipher update error\n");
+        exit(1);
+    }
+    assert(actually_written == 16);
+
+    xor_in_place(&output, &output, prev_block);
+    return output;
+}
+
+bbuf aes_cbc(bbuf *input, bbuf *key, bbuf *iv, bool encrypt)
+{
+    size_t block_idx, block_start;
+    EVP_CIPHER_CTX *ctx;
+    bbuf output = bbuf_new(), block = bbuf_new(), output_block = bbuf_new(), prev_block = bbuf_new();
+
+    SSL_load_error_strings();
+    ERR_load_BIO_strings();
+    OpenSSL_add_all_algorithms();
+
+    bbuf_init_to(&output, input->len);
+
+    ctx = EVP_CIPHER_CTX_new();
+    bbuf_slice(&prev_block, iv, 0, iv->len);
+    for (block_idx = 0; block_idx < (input->len / 16); block_idx++)
+    {
+        block_start = block_idx * 16;
+        bbuf_slice(&block, input, block_start, block_start + 16);
+
+        output_block = aes_cbc_block(ctx, &block, &prev_block, key, encrypt);
+        memcpy(output.buf + block_start, output_block.buf, 16);
+        bbuf_slice(&prev_block, &block, 0, block.len);
+
+        bbuf_destroy(&output_block);
+    }
+
+    bbuf_destroy(&block);
+    bbuf_destroy(&prev_block);
+
+    EVP_CIPHER_CTX_free(ctx);
+
+    return output;
+}
