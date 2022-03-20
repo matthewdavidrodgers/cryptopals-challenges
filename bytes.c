@@ -70,6 +70,20 @@ bbuf from_file(char *filename)
     return buffer;
 }
 
+bbuf from_rand_bytes(size_t num_bytes)
+{
+    bbuf buffer = bbuf_new();
+    FILE *f;
+
+    bbuf_init_to(&buffer, num_bytes);
+
+    f = fopen("/dev/urandom", "r");
+    fread(buffer.buf, num_bytes, 1, f);
+    fclose(f);
+
+   return buffer; 
+}
+
 size_t distance(bbuf *a, bbuf *b)
 {
     size_t i, dis, len;
@@ -95,6 +109,20 @@ void pad_for_blocksize(bbuf *buffer, size_t blocksize)
         for (i = 0; i < pad_by; i++)
             bbuf_append(buffer, (uint8_t)pad_by);
     }
+}
+
+size_t dupe_blocks(bbuf *buffer, size_t blocksize)
+{
+    size_t i, j, dupes;
+
+    dupes = 0;
+
+    for (i = 0; i < (buffer->len / blocksize) - 1; i++)
+        for (j = i+1; j < buffer->len / blocksize; j++)
+            if (memcmp(buffer->buf + (i * blocksize), buffer->buf + (j * blocksize), blocksize) == 0)
+                dupes++;
+
+    return dupes;
 }
 
 char *to_string(bbuf *buffer)

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
 
 #include "../common.h"
 #include "../bbuf.h"
@@ -10,65 +9,15 @@
 
 #define DATA_FILENAME "challenge6.txt"
 
-bbuf base64_file_cyphertext(char *filename)
-{
-    FILE *data_file;
-    bbuf encoded_cyphertext_b = bbuf_new(), cyphertext_b = bbuf_new();
-    char *line = NULL;
-    size_t line_len, i;
-    ssize_t nread;
-
-    data_file = fopen(filename, "r");
-    if (!data_file) exit(1);
-
-    bbuf_init(&encoded_cyphertext_b);
-
-    while ((nread = getline(&line, &line_len, data_file)) != -1)
-    {
-        for (i = 0; i < (size_t)nread - 1; i++)
-            bbuf_append(&encoded_cyphertext_b, line[i]);
-#ifndef OMIT_FILE_NEWLINE
-        bbuf_append(&encoded_cyphertext_b, '\n');
-#endif
-    }
-
-#ifdef DEBUG_VERBOSE
-    bbuf_print(&encoded_cyphertext_b, BBUF_GRID);
-#endif
-
-    cyphertext_b = decode_base64(&encoded_cyphertext_b);
-
-    bbuf_destroy(&encoded_cyphertext_b);
-    fclose(data_file);
-    free(line);
-
-    return cyphertext_b;
-}
-
-bbuf simple_cyphertext(char *plaintext, char *keytext)
-{
-    bbuf cyphertext_b = bbuf_new(), plaintext_b = bbuf_new(), keytext_b = bbuf_new();
-
-    plaintext_b = from_ascii(plaintext);
-    keytext_b = from_ascii(keytext);
-
-    cyphertext_b = xor(&plaintext_b, &keytext_b);
-    
-    bbuf_destroy(&plaintext_b);
-    bbuf_destroy(&keytext_b);
-
-    return cyphertext_b;
-}
-
 int main()
 {
-    bbuf cyphertext_b = bbuf_new();
+    bbuf base64_cyphertext_b = bbuf_new(), cyphertext_b = bbuf_new();
     xor_decode_details result;
     char *plaintext, *keytext;
 
-    cyphertext_b = base64_file_cyphertext(DATA_FILENAME);
-    // cyphertext_b = simple_cyphertext("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE");
-    // cyphertext_b = simple_cyphertext("secretattack", "$^!");
+    base64_cyphertext_b = from_file(DATA_FILENAME);
+    cyphertext_b = decode_base64(&base64_cyphertext_b);
+    bbuf_destroy(&base64_cyphertext_b);
 
 #ifdef DEBUG_VERBOSE
     bbuf_print(&cyphertext_b, BBUF_HEX);

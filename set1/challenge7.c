@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <assert.h>
 
 #include "../bbuf.h"
@@ -24,7 +25,7 @@ int main() {
 
     key_b = from_ascii("YELLOW SUBMARINE");
 
-    plaintext_b = decode_aes_ecb(&cyphertext_b, &key_b);
+    plaintext_b = aes_ecb(&cyphertext_b, &key_b, false);
 
     plaintext = to_string(&plaintext_b);
     printf("decoded to\n\"%s\"\n", plaintext);

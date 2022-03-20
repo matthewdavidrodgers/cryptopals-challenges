@@ -450,42 +450,44 @@ sb_xor_decode_details decode_sb_xor(bbuf *buffer)
     return winning;
 }
 
-bbuf decode_aes_ecb(bbuf *cyphertext, bbuf *key)
+bbuf aes_ecb(bbuf *input, bbuf *key, bool encrypt)
 {
     int written, total_written;
     EVP_CIPHER_CTX *ctx;
-    bbuf plaintext = bbuf_new();
+    bbuf output = bbuf_new();
 
     SSL_load_error_strings();
     ERR_load_BIO_strings();
     OpenSSL_add_all_algorithms();
 
-    bbuf_init_to(&plaintext, cyphertext->len);
+    bbuf_init_to(&output, input->len);
 
     ctx = EVP_CIPHER_CTX_new();
-    EVP_DecryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key->buf, NULL);
+    EVP_CipherInit(ctx, EVP_aes_128_ecb(), key->buf, NULL, encrypt);
 
     total_written = written = 0;
 
-    if (!EVP_CipherUpdate(ctx, plaintext.buf, &written, cyphertext->buf, cyphertext->len))
+    if (!EVP_CipherUpdate(ctx, output.buf, &written, input->buf, input->len))
     {
         printf("OpenSSL Cipher update error\n");
+        ERR_print_errors_fp(stderr);
         exit(1);
     }
     total_written += written;
-    if (!EVP_CipherFinal(ctx, plaintext.buf + total_written, &written))
+    if (!EVP_CipherFinal(ctx, output.buf + total_written, &written))
     {
         printf("OpenSSL Cipher finalize error\n");
+        ERR_print_errors_fp(stderr);
         exit(1);
     }
     total_written += written;
 
-    assert(((int)plaintext.len - 16) < total_written && total_written <= (int)plaintext.len);
-    plaintext.len = total_written; // should i realloc off the extra bytes?
+    assert(((int)output.len - 16) < total_written && total_written <= (int)output.len);
+    output.len = total_written;
 
     EVP_CIPHER_CTX_free(ctx);
 
-    return plaintext;
+    return output;
 }
 
 bbuf aes_cbc_block(EVP_CIPHER_CTX *ctx, bbuf *block, bbuf *prev_block, bbuf *key, bool encrypt)
