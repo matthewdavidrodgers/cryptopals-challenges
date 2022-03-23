@@ -84,6 +84,20 @@ bbuf from_rand_bytes(size_t num_bytes)
    return buffer; 
 }
 
+bbuf from_rand_rand_bytes(size_t min, size_t max)
+{
+    size_t chosen_size;
+    FILE *f;
+
+    f = fopen("/dev/urandom", "r");
+    fread(&chosen_size, sizeof(size_t), 1, f);
+    fclose(f);
+
+    chosen_size = min + (chosen_size % (max + 1 - min));
+
+    return from_rand_bytes(chosen_size);
+}
+
 size_t distance(bbuf *a, bbuf *b)
 {
     size_t i, dis, len;

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #include "bbuf.h"
@@ -56,6 +57,18 @@ void bbuf_append(bbuf *bbuffer, uint8_t b)
         bbuffer->buf = (uint8_t *)realloc(bbuffer->buf, bbuffer->cap);
     }
     bbuffer->buf[bbuffer->len++] = b;
+}
+
+bbuf bbuf_concat(bbuf *a, bbuf *b)
+{
+    bbuf output = bbuf_new();
+    
+    bbuf_init_to(&output, a->len + b->len);
+
+    memcpy(output.buf, a->buf, a->len);
+    memcpy(output.buf + a->len, b->buf, b->len);
+
+    return output;
 }
 
 void bbuf_slice(bbuf *dst, bbuf *src, size_t start, size_t end)

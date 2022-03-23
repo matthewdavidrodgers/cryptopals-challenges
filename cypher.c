@@ -450,24 +450,21 @@ sb_xor_decode_details decode_sb_xor(bbuf *buffer)
     return winning;
 }
 
-bbuf aes_ecb(bbuf *input, bbuf *key, bool encrypt)
+bbuf aes_block(EVP_CIPHER_CTX *ctx, bbuf *block, bbuf *key, bool encrypt)
 {
-    int written, total_written;
-    EVP_CIPHER_CTX *ctx;
     bbuf output = bbuf_new();
+    int written, total_written;
 
-    SSL_load_error_strings();
-    ERR_load_BIO_strings();
-    OpenSSL_add_all_algorithms();
+    assert(block->len == 16);
 
-    bbuf_init_to(&output, input->len);
+    bbuf_init_to(&output, 16);
 
-    ctx = EVP_CIPHER_CTX_new();
+    EVP_CIPHER_CTX_reset(ctx);
     EVP_CipherInit(ctx, EVP_aes_128_ecb(), key->buf, NULL, encrypt);
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
 
     total_written = written = 0;
-
-    if (!EVP_CipherUpdate(ctx, output.buf, &written, input->buf, input->len))
+    if (!EVP_CipherUpdate(ctx, output.buf, &written, block->buf, block->len))
     {
         printf("OpenSSL Cipher update error\n");
         ERR_print_errors_fp(stderr);
@@ -482,34 +479,44 @@ bbuf aes_ecb(bbuf *input, bbuf *key, bool encrypt)
     }
     total_written += written;
 
-    assert(((int)output.len - 16) < total_written && total_written <= (int)output.len);
-    output.len = total_written;
-
-    EVP_CIPHER_CTX_free(ctx);
+    assert(total_written == 16);
 
     return output;
 }
 
-bbuf aes_cbc_block(EVP_CIPHER_CTX *ctx, bbuf *block, bbuf *prev_block, bbuf *key, bool encrypt)
+bbuf aes_ecb(bbuf *input, bbuf *key, bool encrypt)
 {
-    bbuf output = bbuf_new();
-    int actually_written;
+    size_t block_idx, block_start;
+    EVP_CIPHER_CTX *ctx;
+    bbuf output = bbuf_new(),
+         block = bbuf_new(),
+         output_block = bbuf_new();
 
-    bbuf_init_to(&output, block->len);
+    SSL_load_error_strings();
+    ERR_load_BIO_strings();
+    OpenSSL_add_all_algorithms();
 
-    EVP_CIPHER_CTX_reset(ctx);
-    EVP_CipherInit(ctx, EVP_aes_128_ecb(), key->buf, NULL, encrypt);
-    EVP_CIPHER_CTX_set_padding(ctx, 0);
+    bbuf_init_to(&output, input->len);
+    pad_for_blocksize(&output, 16);
 
-    actually_written = 0;
-    if (!EVP_CipherUpdate(ctx, output.buf, &actually_written, block->buf, 16))
+    ctx = EVP_CIPHER_CTX_new();
+    for (block_idx = 0; block_idx < (output.len / 16); block_idx++)
     {
-        printf("OpenSSL Cipher update error\n");
-        exit(1);
-    }
-    assert(actually_written == 16);
+        block_start = block_idx * 16;
+        bbuf_slice(&block, input, block_start,
+                block_start + 16 > input->len ? input->len : block_start + 16);
+        pad_for_blocksize(&block, 16);
 
-    xor_in_place(&output, &output, prev_block);
+        output_block = aes_block(ctx, &block, key, encrypt);
+        memcpy(output.buf + block_start, output_block.buf, output_block.len);
+
+        bbuf_destroy(&output_block);
+    }
+
+    bbuf_destroy(&block);
+
+    EVP_CIPHER_CTX_free(ctx);
+
     return output;
 }
 
@@ -517,24 +524,41 @@ bbuf aes_cbc(bbuf *input, bbuf *key, bbuf *iv, bool encrypt)
 {
     size_t block_idx, block_start;
     EVP_CIPHER_CTX *ctx;
-    bbuf output = bbuf_new(), block = bbuf_new(), output_block = bbuf_new(), prev_block = bbuf_new();
+    bbuf output = bbuf_new(),
+         block = bbuf_new(),
+         output_block = bbuf_new(),
+         prev_block = bbuf_new();
 
     SSL_load_error_strings();
     ERR_load_BIO_strings();
     OpenSSL_add_all_algorithms();
 
     bbuf_init_to(&output, input->len);
+    pad_for_blocksize(&output, 16);
 
     ctx = EVP_CIPHER_CTX_new();
     bbuf_slice(&prev_block, iv, 0, iv->len);
-    for (block_idx = 0; block_idx < (input->len / 16); block_idx++)
+    for (block_idx = 0; block_idx < (output.len / 16); block_idx++)
     {
         block_start = block_idx * 16;
-        bbuf_slice(&block, input, block_start, block_start + 16);
+        bbuf_slice(&block, input, block_start,
+                block_start + 16 > input->len ? input->len : block_start + 16);
+        pad_for_blocksize(&block, 16);
 
-        output_block = aes_cbc_block(ctx, &block, &prev_block, key, encrypt);
-        memcpy(output.buf + block_start, output_block.buf, 16);
-        bbuf_slice(&prev_block, &block, 0, block.len);
+        if (encrypt)
+        {
+            xor_in_place(&block, &block, &prev_block);
+            output_block = aes_block(ctx, &block, key, encrypt);
+            bbuf_slice(&prev_block, &output_block, 0, output_block.len);
+        }
+        else
+        {
+            output_block = aes_block(ctx, &block, key, encrypt);
+            xor_in_place(&output_block, &output_block, &prev_block);
+            bbuf_slice(&prev_block, &block, 0, block.len);
+        }
+
+        memcpy(output.buf + block_start, output_block.buf, output_block.len);
 
         bbuf_destroy(&output_block);
     }
@@ -545,4 +569,51 @@ bbuf aes_cbc(bbuf *input, bbuf *key, bbuf *iv, bool encrypt)
     EVP_CIPHER_CTX_free(ctx);
 
     return output;
+}
+
+bbuf encryption_oracle(bbuf *plaintext)
+{
+    bbuf rand_key = bbuf_new(),
+         rand_iv = bbuf_new(),
+         rand_prepend = bbuf_new(),
+         rand_append = bbuf_new(),
+         temp = bbuf_new(),
+         adjusted_plaintext = bbuf_new(),
+         cyphertext = bbuf_new();
+
+    rand_key = from_rand_bytes(16);
+    rand_iv = from_rand_bytes(16);
+    rand_prepend = from_rand_rand_bytes(5, 10);
+    rand_append = from_rand_rand_bytes(5, 10);
+
+    temp = bbuf_concat(&rand_prepend, plaintext);
+    adjusted_plaintext = bbuf_concat(&temp, &rand_append);
+    bbuf_destroy(&temp);
+#ifdef ORACLE_DEBUG
+    printf("adjusted plaintext:\n");
+    bbuf_print(&adjusted_plaintext, BBUF_GRID);
+#endif
+    
+    if (rand_iv.buf[0] % 2) // randomly pick encryption method based on the random iv
+    {
+#ifdef ORACLE_DEBUG
+        printf("oracle encrypting with aes cbc\n");
+#endif
+        cyphertext = aes_cbc(&adjusted_plaintext, &rand_key, &rand_iv, true);
+    }
+    else
+    {
+#ifdef ORACLE_DEBUG
+        printf("oracle encrypting with aes ecb\n");
+#endif
+        cyphertext = aes_ecb(&adjusted_plaintext, &rand_key, true);
+    }
+
+    bbuf_destroy(&rand_key);
+    bbuf_destroy(&rand_iv);
+    bbuf_destroy(&rand_prepend);
+    bbuf_destroy(&rand_append);
+    bbuf_destroy(&adjusted_plaintext);
+
+    return cyphertext;
 }

@@ -31,5 +31,6 @@ xor_decode_details decode_rk_xor_for_size(bbuf *buffer, size_t keysize);
 xor_decode_details decode_rk_xor(bbuf *buffer);
 bbuf aes_ecb(bbuf *input, bbuf *key, bool encrypt);
 bbuf aes_cbc(bbuf *input, bbuf *key, bbuf *iv, bool encrypt);
+bbuf encryption_oracle(bbuf *plaintext);
 
 #endif
