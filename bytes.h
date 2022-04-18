@@ -1,6 +1,8 @@
 #ifndef cpals_bytes_h
 #define cpals_bytes_h
 
+#include <stdbool.h>
+
 #include "bbuf.h"
 
 bbuf xor(bbuf *a, bbuf *b);
@@ -13,6 +15,7 @@ void pad_for_blocksize(bbuf *b, size_t blocksize);
 void pad_for_blocksize(bbuf *b, size_t blocksize);
 size_t dupe_blocks(bbuf *buffer, size_t blocksize);
 size_t distance(bbuf *a, bbuf *b);
+bool are_equal(bbuf *a, bbuf *b);
 char *to_string(bbuf *buffer);
 
 #endif

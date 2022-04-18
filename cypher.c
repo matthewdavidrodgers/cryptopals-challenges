@@ -34,6 +34,9 @@ double avg_char_frequencies[] = {
     0.019913847*.003,    0.000746517*.003
 };
 
+static bbuf *simple_oracle_secret_content = NULL;
+static bbuf *simple_oracle_secret_key = NULL;
+
 #define KEYSIZES_TAKEN 10
 #define SB_XOR_BYTES_TAKEN 6
 #define COMPARE_SCORES 10
@@ -567,6 +570,37 @@ bbuf aes_cbc(bbuf *input, bbuf *key, bbuf *iv, bool encrypt)
     bbuf_destroy(&prev_block);
 
     EVP_CIPHER_CTX_free(ctx);
+
+    return output;
+}
+
+void simple_oracle_setup(bbuf secret_content)
+{
+    bbuf key = bbuf_new();
+
+    key = from_rand_bytes(16);
+    simple_oracle_secret_key = (bbuf *)malloc(sizeof(bbuf));
+    simple_oracle_secret_key->len = key.len;
+    simple_oracle_secret_key->cap = key.cap;
+    simple_oracle_secret_key->buf = key.buf;
+
+    simple_oracle_secret_content = &secret_content;
+}
+
+void simple_oracle_teardown()
+{
+    bbuf_destroy(simple_oracle_secret_content);
+    bbuf_destroy(simple_oracle_secret_key);
+}
+
+bbuf simple_oracle(bbuf *known_prepend)
+{
+    bbuf adjusted_content = bbuf_new(), output = bbuf_new();
+
+    adjusted_content = bbuf_concat(known_prepend, simple_oracle_secret_content);
+
+    output = aes_ecb(&adjusted_content, simple_oracle_secret_key, true);
+    bbuf_destroy(&adjusted_content);
 
     return output;
 }

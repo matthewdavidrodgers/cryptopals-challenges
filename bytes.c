@@ -139,6 +139,14 @@ size_t dupe_blocks(bbuf *buffer, size_t blocksize)
     return dupes;
 }
 
+bool are_equal(bbuf *a, bbuf *b)
+{
+    if (a->len != b-> len)
+        return false;
+
+    return memcmp(a->buf, b->buf, a->len) == 0;
+}
+
 char *to_string(bbuf *buffer)
 {
     char *str = (char *)malloc(buffer->len + 1);
